@@ -3,8 +3,9 @@
 const express = require('express');
 const { Server } = require('ws');
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 const INDEX = '/index.html';
+const { getData } = require('./binance-futurs');
 
 const server = express()
   .use((req, res) => res.sendFile(INDEX, { root: __dirname }))
@@ -13,12 +14,8 @@ const server = express()
 const wss = new Server({ server });
 
 wss.on('connection', (ws) => {
-  console.log('Client connected');
   ws.on('close', () => console.log('Client disconnected'));
-});
-
-setInterval(() => {
-  wss.clients.forEach((client) => {
-    client.send(new Date().toTimeString());
+  getData((data) => {
+    ws.send(JSON.stringify(data));
   });
-}, 1000);
+});
